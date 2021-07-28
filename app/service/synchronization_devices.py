@@ -12,7 +12,7 @@ from loguru import logger
 
 class Synchonization:
     __headers = {'auth': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2RlRmFybSI6MSwiaWF0IjoxNjE5NzI0MTYwLCJleHAiOjE3Nzc1MTIxNjB9.6Sg4ozy9v_CPzYiB1KxjyNtw3wz5LmKR6TPafa3XWwg'}
-       
+    __values = 0
     async def request_to_farm(self, db: Database, session: ClientSession, url: str, device: dict):
         type_sensor = device["type"]
         # print(device)
@@ -23,12 +23,13 @@ class Synchonization:
             }
         async with session.post(url, json= data, headers= self.__headers ) as resp:
             status = resp.status
-            if status == 200:
-                ...#update_sensors(db, type_sensor, [device.get('_id')])
+            if status in [200, 201]:
+                update_sensors(db, type_sensor, [device.get('_id')])
+                self.__values += 1
             elif status == 301:
                 ...#delete_sensors(db, device.get('type'), [device.get('_id')])
             else:
-                logger.info("Error internal Value")
+                ...# logger.info("Error internal Value")
             return device
             
     
@@ -44,6 +45,7 @@ class Synchonization:
         if response.status_code == 200:
             registers, list_sensors =  list_oldest_records(db=db)
             asyncio.run(self.request_list_to_farm(db, url_sync, registers))
+        print(self.__values)
         # interversoes, botao para suspender, 
         # demon para rodar a cada 10 segundos
         #tela do cloud com um botao
