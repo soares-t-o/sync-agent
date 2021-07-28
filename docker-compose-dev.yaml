@@ -1,0 +1,55 @@
+version: "3"
+
+services: 
+    agent:
+        image: python:3.8
+        container_name: agent
+        ports: 
+            - 8080:8080
+        volumes: 
+            - ./:/usr/src/app/
+        tty: true
+        depends_on: 
+            - db
+        networks: 
+            - mongo-networks
+        restart: always
+    
+    mongo-express:
+        image: mongo-express
+        container_name: express
+        ports:
+            - 8081:8081
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongo
+            - ME_CONFIG_MONGODB_PORT=27017
+            - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
+            - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
+            - ME_CONFIG_MONGODB_AUTH_USERNAME=root
+            - ME_CONFIG_MONGODB_AUTH_PASSWORD=root
+            - ME_CONFIG_BASICAUTH_USERNAME=dev
+            - ME_CONFIG_BASICAUTH_PASSWORD=dev
+        links:
+            - db
+        networks:
+            - mongo-networks
+    
+    db:
+        image: mongo
+        container_name: mongo
+        restart: always
+        tty: true
+        ports:
+            - "27017:27017"
+        environment:
+            - MONGO_INITDB_DATABASE=e-cattle
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=root
+        networks: 
+            - mongo-networks
+        volumes: 
+            - ./mongo_volumes:/data/db
+
+networks: 
+    mongo-networks:
+        driver: bridge

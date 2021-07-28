@@ -1,0 +1,49 @@
+version: "3"
+
+services: 
+    agent:
+        image: python:3.8
+        container_name: agent
+        ports: 
+            - 8080:8080
+        volumes: 
+            - ./:/usr/src/app/
+        tty: true
+        depends_on: 
+            - db
+        networks: 
+            - mongo-networks
+        restart: always
+    
+    db:
+        image: mongo
+        container_name: mongo
+        restart: always
+        tty: true
+        ports:
+            - "27017:27017"
+        environment:
+            - MONGO_INITDB_DATABASE=e-cattle
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=root
+        networks: 
+            - mongo-networks
+        volumes: 
+            - ./mongo_volumes:/data/db
+
+    services: 
+        servidor:
+            image: node:15
+            container_name: api-teste
+            networks: 
+                - mongo-networks
+            tty: true
+            ports:
+                - "6000:6000"
+            restart: always
+            depends_on: 
+                - db
+
+networks: 
+    mongo-networks:
+        driver: bridge
